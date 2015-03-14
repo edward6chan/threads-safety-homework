@@ -17,25 +17,32 @@ public class Transfer extends Transaction {
 
 	public void makeTransaction(){
 
+		double fromAccountBalance = fromAccount.getAccountBalance();
+		double toAccountBalance = toAccount.getAccountBalance();
+
 		System.out.println("Transfering: $" + transferAmount + " from Account: " + fromAccount.getAccountNumber() + " to Account: " + toAccount.getAccountNumber() + "...");
 
 		synchronized(fromAccount)
 		{
+			
+			if ((fromAccountBalance - transferAmount) > 0) {
+				Transaction withdrawal = new Withdrawal(fromAccount,transferAmount);
+				withdrawal.start();
+			}
 
 			Thread.yield();
 
 			synchronized(toAccount){
-
-				double fromAccountBalance = fromAccount.getAccountBalance();
-				double toAccountBalance = toAccount.getAccountBalance();
 
 				//try{
 					//Thread.sleep(4000);
 		        //}catch(InterruptedException e){}
 				  
 			    if ((fromAccountBalance - transferAmount) > 0) {
-				  fromAccount.setAccountBalance(fromAccountBalance - transferAmount);
-				  toAccount.setAccountBalance(toAccountBalance + transferAmount);
+			    	Transaction deposit = new Deposit(toAccount,transferAmount);
+					deposit.start();
+				  //fromAccount.setAccountBalance(fromAccountBalance - transferAmount);
+				  //toAccount.setAccountBalance(toAccountBalance + transferAmount);
 				}
 				else {
 				  System.out.println("Insufficient amount of funds to transfer. Transaction voided.");
